@@ -35,7 +35,7 @@ typedef struct Object{
 
 
 object_t *new_object_integer(int value){
-   object_t *new_obj = (object_t *)malloc(sizeof(object_t));
+   object_t *new_obj = malloc(sizeof(object_t));
    if (new_obj == NULL){
         return NULL;
    }
@@ -46,7 +46,7 @@ object_t *new_object_integer(int value){
 }
 
 object_t *new_object_float(float value){
-   object_t *new_obj = (object_t *)malloc(sizeof(object_t));
+   object_t *new_obj = malloc(sizeof(object_t));
    if (new_obj == NULL){
         return NULL;
    }
@@ -58,7 +58,7 @@ object_t *new_object_float(float value){
 
 
 object_t *new_object_string(char *value){
-   object_t *new_obj = (object_t *)malloc(sizeof(object_t));
+   object_t *new_obj = malloc(sizeof(object_t));
    if (new_obj == NULL){
         return NULL;
    }
@@ -79,7 +79,7 @@ object_t *new_object_collection(size_t capacity) {
         return NULL;
     }
 
-    object_t *new_obj = (object_t *)malloc(sizeof(object_t));
+    object_t *new_obj = malloc(sizeof(object_t));
 
     if(new_obj == NULL){
         return NULL;
@@ -267,7 +267,7 @@ object_t *object_add(object_t *a, object_t *b){
             }
             size_t length = strlen(a -> data.v_string) + strlen(b -> data.v_string) + 1;
 
-            char *new_string = calloc(sizeof(char), length);
+            char *new_string = calloc(length, sizeof(char));
             if(new_string == NULL){
                 return NULL;
             }
