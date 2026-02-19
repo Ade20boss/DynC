@@ -469,9 +469,61 @@ object_t *object_add(object_t *a, object_t *b){
             // Removing this line causes Double Free errors.
             a -> data.v_collection.length = 0;
             b -> data.v_collection.length = 0;
-            object_free(a);
-            object_free(b);
             return new_collection;
+        case VECTOR:{
+            switch(b -> kind){
+                case INTEGER:{
+                    float scalar = (float)b -> data.v_int;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] + scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+                    return new_vector;
+                }
+
+                case FLOAT:{
+                    float scalar = b -> data.v_float;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] + scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+                    return new_vector;
+
+                }
+                case VECTOR:{
+                    if (a -> data.v_vector.dimensions != b -> data.v_vector.dimensions){
+                        fprintf(stderr, "Cannot perform element wise addition on vectors in different dimenstions");
+                        object_free(a);
+                        object_free(b);
+                        return NULL;
+                    }
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] + b -> data.v_vector.coords[i];
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+                    return new_vector;
+
+                }
+                default:
+                    fprintf(stderr,"Incompatible kinds");
+                    object_free(a);
+                    object_free(b);
+                    return NULL;
+
+            }
+        }
+            
         default: return NULL;
     }
 
@@ -616,9 +668,65 @@ object_t *object_subtract(object_t *a, object_t *b){
                 object_free(popped_item);
             }
             
-            object_free(b);
             return a;
-        
+         case VECTOR:{
+            switch(b -> kind){
+                case INTEGER:{
+                    float scalar = (float)b -> data.v_int;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] - scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+
+                    return new_vector;
+                }
+
+                case FLOAT:{
+                    float scalar = b -> data.v_float;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] - scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+
+                    return new_vector;
+
+                }
+                case VECTOR:{
+                    if (a -> data.v_vector.dimensions != b -> data.v_vector.dimensions){
+                        fprintf(stderr, "Cannot perform element wise subtraction on vectors in different dimenstions");
+                        object_free(a);
+                        object_free(b);
+                        return NULL;
+                    }
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] - b -> data.v_vector.coords[i];
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+                    return new_vector;
+
+                }
+                default:
+                    fprintf(stderr,"Incompatible kinds");
+
+                    return NULL;
+
+            }
+        }
+            
+        default:
+            return NULL;
     }
     return NULL;
 }
@@ -687,10 +795,63 @@ object_t *object_multiply(object_t *a, object_t *b){
                     collection_append(new_collection, object_clone(a -> data.v_collection.data[j]));
                 }
             }
-            object_free(a);
-            object_free(b);
             return new_collection;
         }
+
+         case VECTOR:{
+            switch(b -> kind){
+                case INTEGER:{
+                    float scalar = (float)b -> data.v_int;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] * scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+                    return new_vector;
+                }
+
+                case FLOAT:{
+                    float scalar = b -> data.v_float;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] * scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+
+                    return new_vector;
+
+                }
+                case VECTOR:{
+                    if (a -> data.v_vector.dimensions != b -> data.v_vector.dimensions){
+                        fprintf(stderr, "Cannot perform element wise multiplication on vectors in different dimenstions");
+
+                        return NULL;
+                    }
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] * b -> data.v_vector.coords[i];
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+                    return new_vector;
+
+                }
+                default:
+                    fprintf(stderr,"Incompatible kinds");
+
+                    return NULL;
+
+            }
+        }
+            
         default:
             return NULL;
     }
@@ -738,6 +899,73 @@ object_t *object_divide(object_t *a, object_t *b){
                     fprintf(stderr, "Cannot perform operation on incompatible kinds\n");
                     return NULL;
             }
+         case VECTOR:{
+            switch(b -> kind){
+                case INTEGER:{
+                    if (b -> data.v_int == 0){
+                        fprintf(stderr, "Division by zero error");
+
+                        return NULL;
+                    }
+                    float scalar = (float)b -> data.v_int;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] / scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+                    return new_vector;
+                }
+
+                case FLOAT:{
+                    if (b -> data.v_float == 0.0){
+                        fprintf(stderr, "Division by zero error");
+
+                        return NULL;
+                    }
+                    float scalar = b -> data.v_float;
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] / scalar;
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+
+
+                    return new_vector;
+
+                }
+                case VECTOR:{
+                    if (a -> data.v_vector.dimensions != b -> data.v_vector.dimensions){
+                        fprintf(stderr, "Cannot perform element wise division on vectors in different dimenstions");
+                        return NULL;
+                    }
+                    for (size_t j = 0; j < a -> data.v_vector.dimensions; j++){
+                        if (b -> data.v_vector.coords[j] == 0.0){
+                            fprintf(stderr, "Division by zero error");
+                            return NULL;
+                        }
+                    }
+                    float buffer[a -> data.v_vector.dimensions];
+
+                    for (size_t i = 0; i < a -> data.v_vector.dimensions; i++){
+                        buffer[i] = a -> data.v_vector.coords[i] / b -> data.v_vector.coords[i];
+                    }
+
+                    object_t *new_vector = new_object_vector(a -> data.v_vector.dimensions, buffer);
+                    return new_vector;
+
+                }
+                default:
+                    fprintf(stderr,"Incompatible kinds");
+                    return NULL;
+
+            }
+        }
+            
         case STRING:
             fprintf(stderr, "Cannot perform division operation on string kind");
             return NULL;
@@ -961,10 +1189,9 @@ void run_vm(vm_t *vm){
                 }
 
                 collection_append(vm -> operand_stack, result);
-                if (pop1 -> kind != COLLECTION && pop2 -> kind != COLLECTION){
-                    object_free(pop1);
-                    object_free(pop2);
-                }
+
+                object_free(pop1);
+                object_free(pop2);
 
                 break;
             }
@@ -989,10 +1216,8 @@ void run_vm(vm_t *vm){
                 }
 
                 collection_append(vm -> operand_stack, result);
-                if (pop1 -> kind != COLLECTION && pop2 -> kind != COLLECTION){
-                    object_free(pop1);
-                    object_free(pop2);
-                }
+                object_free(pop1);
+                object_free(pop2);
 
                 break;
 
@@ -1018,10 +1243,9 @@ void run_vm(vm_t *vm){
                 }
 
                 collection_append(vm -> operand_stack, result);
-                if (pop1 -> kind != COLLECTION && pop2 -> kind != COLLECTION){
-                    object_free(pop1);
-                    object_free(pop2);
-                }
+
+                object_free(pop1);
+                object_free(pop2);
 
                 break;
 
@@ -1047,10 +1271,8 @@ void run_vm(vm_t *vm){
                 }
 
                 collection_append(vm -> operand_stack, result);
-                if (pop1 -> kind != COLLECTION && pop2 -> kind != COLLECTION){
-                    object_free(pop1);
-                    object_free(pop2);
-                }
+                object_free(pop1);
+                object_free(pop2);
 
                 break;
 
@@ -1074,5 +1296,33 @@ void run_vm(vm_t *vm){
         }
 
     }
+}
+
+int main(){
+    float f1 = 10.0f;
+    float f2 = 20.0f;
+    float f3 = 30.0f;
+    float f4 = 2.0f;
+    
+    size_t opcodes[] = {
+        OP_PUSH_FLOAT, *(size_t*)&f1,
+        OP_PUSH_FLOAT, *(size_t*)&f2,
+        OP_PUSH_FLOAT, *(size_t*)&f3,
+        OP_BUILD_VECTOR, 3,
+        OP_PUSH_FLOAT, *(size_t*)&f4,
+        OP_ADD,
+        OP_PRINT,
+        OP_HALT,
+    };
+
+   vm_t *vm_test =  new_virtual_machine(opcodes);
+   run_vm(vm_test);
+   object_free(vm_test -> operand_stack);
+   free(vm_test);
+
+   return 0;
+
+
+
 }
 
